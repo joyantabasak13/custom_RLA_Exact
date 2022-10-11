@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rla-config>
+	<!-- datasets definition start -->
+	<!-- ID FirstName MiddleName LastName Gender SSN DOB SASID -->
+		<globalindex>	
+			<value>0 1 2 3 4 5 6</value> 
+		</globalindex>
+		<weights>	
+			<value>1 1 1 1 1 1 1</value>
+		</weights>
+		<dataset name="CCC"  id="1">	
+			<value>./../in/some/samplecc.txt</value>
+			<dataset_index>	
+				<value>0 1 2 3 4 5 -1</value>
+			</dataset_index>
+		</dataset>
+		<dataset name="CSU"  id="2">	
+			<value>./../in/some/samplecsu.txt</value>
+			<dataset_index>	
+				<value>0 1 2 3 4 5 -1</value>
+			</dataset_index>
+		</dataset>
+		<dataset name="DOL"  id="3">	
+			<value>./../in/some/sampledol.txt</value>
+			<dataset_index>	
+				<value>2 -1 1 -1 0 -1 -1</value>
+			</dataset_index>
+		</dataset>
+		<dataset name="SDE"  id="4">	
+			<value>./../in/some/samplesde.txt</value>
+			<dataset_index>	
+				<value>1 2 3 5 -1 0 4</value>
+			</dataset_index>
+		</dataset>
+	<!-- datasets definition end  -->
+
+	<!-- Record linkage configuration parameter sets start -->
+		<!-- Record linkage configuration parameter set1 start -->
+		<version-config-param id="ComparisonGroup">
+						
+			<comparison id="FN">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance -->
+				<dist_calc_method>
+					<value>3</value>
+				</dist_calc_method>
+				<comparing_attribute_indices id="1">
+					<value>0</value>				
+				</comparing_attribute_indices>
+				<truncate_count>
+					<value>1</value> 
+				</truncate_count>
+				
+			</comparison>
+
+			<comparison id="MN">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>1</value>				
+				</comparing_attribute_indices>
+			</comparison>
+
+			<comparison id="LN">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>2</value>				
+				</comparing_attribute_indices>
+			</comparison>
+
+			<comparison id="Gender">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>3</value>				
+				</comparing_attribute_indices>
+			</comparison>
+			
+			<comparison id="SSN">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>4</value>				
+				</comparing_attribute_indices>
+			</comparison>
+			
+			<comparison id="DOB">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>5</value>				
+				</comparing_attribute_indices>
+			</comparison>
+			
+			<comparison id="GenSu">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>6</value>				
+				</comparing_attribute_indices>
+			</comparison>
+		    
+			<!-- threshold -->
+			<threshold>
+				<value>1</value>
+			</threshold>
+			
+			<!-- priority fields -->
+			<priority>
+			    <value>5,6,3</value> <!-- SSN, DOB, LN -->
+		    </priority>
+		    
+			<!-- block fields -->
+			<block>
+			    <index>
+			    	<value>4,5,2</value> <!-- SSN, DOB, LN -->    
+			    </index>
+			    <length>
+			        <value>9,8,6</value> <!-- avg attribute length of index attributes -->
+			    </length>
+			    <type>
+			       	<value>1,1,0</value> <!-- 0 is for alphabet(26), 1 for numeric(10), 2 for alphaneumeric(26+10), 3 for ASCII --> 
+			    </type>
+		    </block>
+		    
+			<output_function >			
+				<!-- Location of outout file --> 
+				<output_filename>
+					<value>./../in/some/datatout.txt</value>
+				</output_filename>
+			</output_function>
+
+		</version-config-param>
+		<!-- Record linkage configuration parameter set1 end -->
+	<!-- Record linkage configuration parameter sets end -->
+</rla-config>	
+	
+	
