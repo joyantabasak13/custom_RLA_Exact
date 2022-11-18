@@ -8,13 +8,13 @@
 			<value>1 1 </value>
 		</weights>
 		<dataset name="dataset1"  id="1">	
-			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/RLA/data/ds10000_0</value>
+			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/19500671/ds2.1.1</value>
 			<dataset_index>	
 				<value>0 1 </value>
 			</dataset_index>
 		</dataset>
 		<dataset name="dataset2"  id="1">	
-			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/RLA/data/ds10000_1</value>
+			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/19500671/ds2.1.2</value>
 			<dataset_index>	
 				<value>0 1 </value>
 			</dataset_index>
@@ -62,7 +62,7 @@
 				<!-- Function type: 1-records across more than a certain number of data files --> 
 				
 				<output_filename>
-					<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/rla_cl_exact/obj/ClOutE10k.txt</value>
+					<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/rla_cl_exact/obj/ClOutE120k_no_mod.txt</value>
 				</output_filename>
 			</output_function>
 

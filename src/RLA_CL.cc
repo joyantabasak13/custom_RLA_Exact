@@ -111,7 +111,7 @@ string configFileStr, outFileAddrStr, inFileAddrStr, strSample, outDir;
 int threshold;
 
 //Ruru
-int rand_theshold = 30;
+int rand_theshold = 35;
 bool is_rand = true;
 
 vector<Cluster> clusterArr;
@@ -1069,7 +1069,13 @@ void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>&
 	cout << clusterExactIndArr.size() << " createBlock() : " << indBlockField << "\ttype " << type << " kmer: " << lmerUsed << endl;
 	if (lmerUsed < 3)
 		lmerUsed	= 3;
-	int blockTotal 	= pow(ALPHABET_SIZE_LIST[type], lmerUsed);
+	// int blockTotal 	= pow(ALPHABET_SIZE_LIST[type], lmerUsed);
+	int prime= 11587;
+	int blockTotal 	= prime;
+	//RURU
+	cout<< "BlockTotal: "<<blockTotal<<endl;
+	// blockTotal = (int) (blockTotal*.50);
+	// cout<< "BlockTotal: "<<blockTotal<<endl;
 	string strSample;
 
 	if (type == 0) // alphabet is english alphabet
@@ -1085,6 +1091,8 @@ void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>&
 	string blockFieldStr;
 
 	int blkCount = 0;
+	int addedToBlock = 0;
+
 	for (int i = 0; i < clusterExactIndArr.size(); ++i) {
 		record	= recordArr[clusterExactIndArr[i][0]];
 		// for(int k = 0; k< record.size(); k++) {
@@ -1127,6 +1135,7 @@ void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>&
 			for (int k = 0; k < lmerUsed; ++k)
 				if (type == 0)
 						blockID	+= (codeRecordArr[j + k] - 97) * (int) pow(ALPHABET_SIZE_LIST[type], lmerUsed - k - 1);
+						// blockID	+= (codeRecordArr[j + k] - 97) * (int) pow(29, lmerUsed - k - 1);
 				else if(type == 1)
 					blockID	+= (codeRecordArr[j + k] - 48) * (int) pow(ALPHABET_SIZE_LIST[type], lmerUsed - k - 1);
 				else if(type == 2)
@@ -1139,26 +1148,30 @@ void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>&
 
 			//if (atoi(record[1].c_str()) == 242299882 || atoi(record[1].c_str()) == 242783653)
 				//cout << i << ":" << blockFieldStr << " id:" << blockID << " len:" << blockFieldStr.length() << " " << j << "\t" << (blockFieldStr.length() - lmerUsed + 1) << "::" << record[record.size() - 1] << endl;
-			if(!(blockID < 0 || blockID >= blockTotal)) {
-				if (is_rand==true) {
-					// RURU found it
-					int rand_int;
-					rand_int = rand() % 100;
-					if (rand_int < rand_theshold) {
-						blockArr[blockID].push_back(i);
-					}
-				} else {
-					blockArr[blockID].push_back(i);
-				}
+			
+			// if (is_rand==true) {
+			// 	int rand_int;
+			// 	rand_int = rand() % 100;
+			// 	if (rand_int >= rand_theshold) {
+			// 		blockArr[blockID%blockTotal].push_back(i);
+			// 		addedToBlock++;
+			// 	}
+			// }
 				
 				//cout<<"BlockID: "<< blockID << " cluster i: "<< i <<endl;
-			}
-				
+			
+			blockArr[blockID].push_back(i);
+			addedToBlock++;
+			
+			// if (blockID < blockTotal) {
+			// 	blockArr[blockID].push_back(i);
+			// 	addedToBlock++;
+			// }
 		}
 
 		blkCount	+= (blockFieldStr.length() - lmerUsed + 1);
 	}
-	cout << blockTotal << "blk count: " << blkCount << endl;
+	cout << blockTotal << "Ideal blk count: " << blkCount << "AddtoABlock: " << addedToBlock << endl;
 }
 
 int c1 = 0, c2 = 0;
