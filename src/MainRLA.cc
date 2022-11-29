@@ -16,8 +16,8 @@ using namespace std;
 // driver function
 int main(int argc, char** argv)
 {
-	if (argc < 3) {
-		cerr << "rlacl config_file_name.xml number_of_records" << endl;
+	if (argc < 2) {
+		cerr << "rlacl <config_file_name.xml> <number_of_records>" << endl;
 		return EXIT_FAILURE;
 	}
 		

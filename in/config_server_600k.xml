@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rla-config>
+	<!-- datasets definition start -->
+		<globalindex>	
+			<value>0 1 2 3</value>
+		</globalindex>
+		<weights>	
+			<value>1 1 1 1</value>
+		</weights>
+		<dataset name="dataset1"  id="1">	
+			<value>/home/joyanta/Documents/Research/Record_Linkage/codes/my_codes/ds_single_datasets/ds5_1_600k</value>
+			<dataset_index>	
+				<value>0 1 2 3</value>
+			</dataset_index>
+		</dataset>
+		<dataset name="dataset2"  id="1">	
+			<value>/home/joyanta/Documents/Research/Record_Linkage/codes/my_codes/ds_single_datasets/ds5_2_600k</value>
+			<dataset_index>	
+				<value>0 1 2 3</value>
+			</dataset_index>
+		</dataset>
+	<!-- datasets definition end  -->
+
+	<!-- Record linkage configuration parameter sets start -->
+		<!-- Record linkage configuration parameter set1 start -->
+		<version-config-param id="ComparisonGroup">
+			
+			<comparison id="8">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance   4-nickname distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>1</value>				
+				</comparing_attribute_indices>
+			</comparison>
+
+			<comparison id="8">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance   4-nickname distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>2</value>				
+				</comparing_attribute_indices>
+			</comparison>
+
+			<comparison id="8">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance   4-nickname distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>3</value>				
+				</comparing_attribute_indices>
+			</comparison>
+			
+			<!-- threshold -->
+			<threshold>
+				<value>1</value>
+			</threshold>
+			
+			<!-- priority fields -->
+			<priority>
+			    <value>1 2 3</value> <!-- SSN -->
+		    </priority>
+
+			<!-- block fields -->
+			<block>
+			    <index>
+			    	<value>1</value> <!-- SSN, Name -->    
+			    </index>
+			    <length>
+			        <value>5</value> <!-- attribute length of index attributes -->
+			    </length>
+			    <type>
+			       	<value>0</value> <!-- 0 is for alphabet(26), 1 for numeric(10), 2 for alphaneumeric(26+10), 3 for ASCII (3 is not being used)--> 
+			    </type>
+		    </block>
+
+			<output_function id="1">			
+				<!-- Function type: 1-records across more than a certain number of data files --> 
+				
+				<output_filename>
+					<value>/home/joyanta/Documents/Research/Record_Linkage/codes/rla_cl_exact/obj/ClOut_ds5_600k_</value>
+				</output_filename>
+			</output_function>
+
+		</version-config-param>
+		<!-- Record linkage configuration parameter set1 end -->
+	<!-- Record linkage configuration parameter sets end -->
+</rla-config>	
+	
+	

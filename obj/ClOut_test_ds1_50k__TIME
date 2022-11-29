@@ -1,0 +1,4 @@
+# of exact clusters: 19995
+Final Clustering Done: 10000
+recordTotal: 50000 readT: 0.091237 outT: 0.128143
+totalT: 10.4537 exactT: 0.037622 approxT: 10.2198 finalT: 0.002307 completeT: 0.193949

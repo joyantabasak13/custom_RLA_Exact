@@ -2,21 +2,21 @@
 <rla-config>
 	<!-- datasets definition start -->
 		<globalindex>	
-			<value>0 1 </value>
+			<value>0 1 2 3</value>
 		</globalindex>
 		<weights>	
-			<value>1 1 </value>
+			<value>1 1 1 1</value>
 		</weights>
 		<dataset name="dataset1"  id="1">	
-			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/19500671/ds2.1.1</value>
+			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/ds_single_datasets/ds1_1_50k</value>
 			<dataset_index>	
-				<value>0 1 </value>
+				<value>0 1 2 3</value>
 			</dataset_index>
 		</dataset>
 		<dataset name="dataset2"  id="1">	
-			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/19500671/ds2.1.2</value>
+			<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/my_codes/ds_single_datasets/ds1_2_50k</value>
 			<dataset_index>	
-				<value>0 1 </value>
+				<value>0 1 2 3</value>
 			</dataset_index>
 		</dataset>
 	<!-- datasets definition end  -->
@@ -34,6 +34,26 @@
 					<value>1</value>				
 				</comparing_attribute_indices>
 			</comparison>
+
+			<comparison id="8">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance   4-nickname distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>2</value>				
+				</comparing_attribute_indices>
+			</comparison>
+
+			<comparison id="8">
+				<!-- comparison method: 1-edit distance   2-reversal distance   3-truncation distance   4-nickname distance -->
+				<dist_calc_method>
+					<value>1</value>
+				</dist_calc_method>			
+				<comparing_attribute_indices id="1">
+					<value>3</value>				
+				</comparing_attribute_indices>
+			</comparison>
 			
 			<!-- threshold -->
 			<threshold>
@@ -42,9 +62,9 @@
 			
 			<!-- priority fields -->
 			<priority>
-			    <value>0</value> <!-- SSN -->
+			    <value>1 2 3</value> <!-- SSN -->
 		    </priority>
-		    
+
 			<!-- block fields -->
 			<block>
 			    <index>
@@ -62,7 +82,7 @@
 				<!-- Function type: 1-records across more than a certain number of data files --> 
 				
 				<output_filename>
-					<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/rla_cl_exact/obj/ClOutE120k_no_mod.txt</value>
+					<value>/Users/joyanta/Documents/Research/Record_Linkage/codes/rla_cl_exact/obj/ClOut_test_ds1_50k_</value>
 				</output_filename>
 			</output_function>
 

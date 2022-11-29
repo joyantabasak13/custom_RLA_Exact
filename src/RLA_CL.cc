@@ -11,11 +11,12 @@
 #include <fstream>
 #include <libxml/xpath.h>
 #include <libxml/parser.h>
-#include </opt/homebrew/Cellar/boost/1.79.0_2/include/boost/algorithm/string.hpp>
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <iterator>
 #include <vector>
-#include </opt/homebrew/Cellar/boost/1.79.0_2/include/boost/lexical_cast.hpp>
+#include <boost/lexical_cast.hpp>
+// #include <boost/algorithm/lexical_cast.hpp>
 #include <ctype.h>
 #include <math.h>
 #include <cmath>
@@ -98,7 +99,7 @@ void updateMatVec(vector<vector<int> > &matArr, vector<vector<int> > &vecArr, in
 void postprocessCluster(vector<Cluster>& clusterSingleArr);
 bool isInCluster(Cluster& cluster, vector<string>& record);
 void processUsedAttr(vector<vector<int> >& usedAttrArr, vector<int>& isInClusterArr, int indDataset, vector<vector<int> >& usedThisAttrArr);
-
+void calculateBlockingReduction();
 void output(int outputType);
 
 static const int ALPHABET_SIZE_LIST[] = {26, 10, 36, 256};
@@ -109,14 +110,16 @@ double readT, clusterExactT, clusterApproxT, clusterFinalT, clusterCLT, totalT, 
 int recordTotal, recordTotalCMD;
 string configFileStr, outFileAddrStr, inFileAddrStr, strSample, outDir;
 int threshold;
-
-//Ruru
-int rand_theshold = 35;
-bool is_rand = true;
+int totalBlocked;
+int totalEdges;
+int c1 = 0;
+long long int totalComp;
+long long int myComp;
 
 vector<Cluster> clusterArr;
 vector<string> fileNameArr;
 vector<vector<string> > recordArr;
+vector<vector<int>> blocks;
 vector<int> weightArr, priorityFieldArr, recordStartIndArr;
 vector<vector<int> > edgeArr, clusterExactIndArr, indexDatasetArr, clusterIndArr, blockFieldArr, clusterExactPairArr;
 vector<vector<vector<int> > > attrArr;
@@ -573,10 +576,14 @@ void readDataFromFile(vector<string>& fileNameArr)
 		}
 		fieldSizeArr.push_back(k);
 	}
-
+	// JB changed: print fieldSizeArr
+	for(int i=0; i< fieldSizeArr.size(); i++) {
+		cout<< "fieldsize at" << i << " is " << fieldSizeArr[i] <<endl; 
+	}
 	// read data
 	unsigned int count;
 	int recordPerFile = ceil(recordTotalCMD / fileNameArr.size());
+	cout<< "Record Per File: "<< recordPerFile << " TotRec: " << recordTotalCMD << " & fiNameArrSize " << fileNameArr.size() << endl;
 	for (unsigned int i = 0; i < fileNameArr.size(); ++i)
 	{
 		recordStartIndArr.push_back(recordArr.size());
@@ -608,8 +615,10 @@ void readDataFromFile(vector<string>& fileNameArr)
 					rowStrArr.push_back(lexical_cast<string>(i));
 					recordArr.push_back(rowStrArr);
 
-					if (++count >= recordPerFile)
-						break;
+					if (++count >= recordPerFile) {
+						cout<< "FIRED" << endl;
+						break;						
+					}
 				}
 			}
 		}
@@ -642,6 +651,7 @@ void readDataFromFile(vector<string>& fileNameArr)
 			strDataArr[i].second	+= strSample.substr(0, lenDiff);
 	}
 }
+
 
 void findExactClusterEach()
 {
@@ -687,13 +697,14 @@ void PrintData() {
 	}
 }
 
+// JB 3
 /*
  * find clusters with no errors by grouping records using exact match 
  */
 void findExactClusterSL() {
 	sortData(); // sort records using some attributes as values (radix sort)
 	
-	//PrintData();
+	// PrintData();
 	
 	vector<int> clusterRowArr;
 	clusterRowArr.push_back(strDataArr[0].first);
@@ -714,11 +725,17 @@ void findExactClusterSL() {
 
 
 
-
+// JB 2
 // cluster data
+// first finds exact clusters, then Approx clusters, then Single linkage clusters, then Complete cluster
 void clusterData()
 {
 	cout << "clusterData()" << endl;
+
+	// JB: Added exta logging
+	string t_log_file = outDir.append("_TIME");
+	ofstream outFile;
+	outFile.open(t_log_file.c_str(), ofstream::out);
 
 	startT			= clock();
 
@@ -728,6 +745,7 @@ void clusterData()
 	//findExactCluster(); // find clusters using exact match
 	findExactClusterSL(); // find clusters using exact match
 	cout << "# of exact clusters: " << clusterExactIndArr.size() << endl;
+	outFile << "# of exact clusters: " << clusterExactIndArr.size() << endl;
 	clusterExactT	= (double)(clock() - currTS1) / CLOCKS_PER_SEC;
 
 	// find approximate clusters
@@ -782,9 +800,28 @@ void clusterData()
 
 	cout << "recordTotal: " << recordTotal << " readT: " << readT << " outT: " << outT << endl;
 	cout << "totalT: " << (totalT - totalOut1T) << " exactT: " << clusterExactT << " approxT: " << clusterApproxT << " finalT: " << clusterFinalT << " completeT: " << clusterCLT << endl;
-
+	calculateBlockingReduction();
+	// JB : added logging
+	outFile << "Final Clustering Done: " << clusterArr.size() << endl;
+	outFile << "recordTotal: " << recordTotal << " readT: " << readT << " outT: " << outT << endl;
+	outFile << "totalT: " << (totalT - totalOut1T) << " exactT: " << clusterExactT << " approxT: " << clusterApproxT << " finalT: " << clusterFinalT << " completeT: " << clusterCLT << endl;
+	outFile << "Total Blocked Instances: " << totalBlocked << endl;
+	outFile << "Total Edges: " << totalEdges << endl;
+	outFile << "Total Possible Comparisions: " << totalComp << endl;
+	outFile << "Comparisions Done in Blocks: " << myComp << endl;
+	outFile << "Reduction ratio: " << (long double)(((long double)myComp) /((long double) totalComp));
+	outFile.close();
 }
 
+//Joyanta
+void calculateBlockingReduction() {
+	totalComp = (long long int)(((long long int)((recordTotal-1)/2))*((long long int)recordTotal));
+	myComp = 0;
+	for(int i=0; i< blocks.size(); i++) {
+		long long int block_size= blocks[i].size();
+		myComp += block_size*(block_size/2);
+	}
+}
 
 
 
@@ -1011,10 +1048,8 @@ void findExactClusterPart(int indSub, int indSup)
 	}
 }
 
-
-
 // find approximate cluster using approximate match by blocking, generating edgelist followed by findig connected components
-// RURU
+
 void findApproxCluster(vector<int>& rootArr)
 {
 	clock_t currTS2	= clock();
@@ -1041,8 +1076,13 @@ void findApproxCluster(vector<int>& rootArr)
 			continue;
 		
 		vector<vector<int>> blockArr;
+		clock_t currTS_b	= clock();
 		createBlock(blockFieldArr[0][i], blockFieldArr[1][i] - NUMBER_LMER + 1, blockFieldArr[2][i], blockArr);
+		cout << "Blocking TIME " << (double)(clock() - currTS_b) / CLOCKS_PER_SEC << endl;
+		clock_t currTS_create_edgelist	= clock();
 		createClusterEdgeList(blockArr);
+		cout << "Cluster creation TIME " << (double)(clock() - currTS_create_edgelist) / CLOCKS_PER_SEC << endl;
+
 
 		for (int j = 0; j < coverSetArr.size(); ++j)
 			if (coverSetArr[j] < 1)
@@ -1062,21 +1102,15 @@ void findApproxCluster(vector<int>& rootArr)
 
 
 // create blocks of records using LMER(here LMER = 3) characters of last name
-// Ruru
 
 void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>& blockArr)
 {
 	cout << clusterExactIndArr.size() << " createBlock() : " << indBlockField << "\ttype " << type << " kmer: " << lmerUsed << endl;
 	if (lmerUsed < 3)
 		lmerUsed	= 3;
-	// int blockTotal 	= pow(ALPHABET_SIZE_LIST[type], lmerUsed);
-	int prime= 11587;
-	int blockTotal 	= prime;
-	//RURU
-	cout<< "BlockTotal: "<<blockTotal<<endl;
-	// blockTotal = (int) (blockTotal*.50);
-	// cout<< "BlockTotal: "<<blockTotal<<endl;
+	int blockTotal 	= pow(ALPHABET_SIZE_LIST[type], lmerUsed);
 	string strSample;
+	long long int blocked_total = 0;
 
 	if (type == 0) // alphabet is english alphabet
 		strSample	= "aaaaaaaaaa"; // enough amount of characters for empty string (here 10)
@@ -1091,25 +1125,21 @@ void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>&
 	string blockFieldStr;
 
 	int blkCount = 0;
-	int addedToBlock = 0;
-
 	for (int i = 0; i < clusterExactIndArr.size(); ++i) {
 		record	= recordArr[clusterExactIndArr[i][0]];
-		// for(int k = 0; k< record.size(); k++) {
-		// 	cout<< record[k]<<endl;
-		// }
 		indFieldDataset	= indexDatasetArr[atoi(record[record.size() - 1].c_str())][indBlockField];
 		if (indFieldDataset < 0)
 			continue;
 		blockFieldStr	= record[indFieldDataset];
 		int strLen	= blockFieldStr.length();
-		//  cout << "block " << i << "\tX" << blockFieldStr << "X\t" << strLen << "\t" << record[1] << endl;
+		//cout << "block " << i << "\tX" << blockFieldStr << "X\t" << strLen << "\t" << record[1] << endl;
 		if (strLen < lmerUsed) {
+			cout<< "Blockfield String too small: "<< blockFieldStr<<endl;
 			blockFieldStr	= strSample.substr(0, lmerUsed - strLen) + blockFieldStr;
 			strLen = lmerUsed;
 		}
 		
-		//cout << i << "\t" << blockFieldStr << "\t" << strLen << endl;
+		// cout << i << "\t" << blockFieldStr << "\t" << strLen << endl;
 
 		vector<int> codeRecordArr;
 		//codeRecordArr.resize(strLen);
@@ -1131,11 +1161,11 @@ void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>&
 		blockID=0;
 		for (int j = 0; j < blockFieldStr.length() - lmerUsed + 1; ++j)
 		{
+			
 			blockID	= 0;
 			for (int k = 0; k < lmerUsed; ++k)
 				if (type == 0)
 						blockID	+= (codeRecordArr[j + k] - 97) * (int) pow(ALPHABET_SIZE_LIST[type], lmerUsed - k - 1);
-						// blockID	+= (codeRecordArr[j + k] - 97) * (int) pow(29, lmerUsed - k - 1);
 				else if(type == 1)
 					blockID	+= (codeRecordArr[j + k] - 48) * (int) pow(ALPHABET_SIZE_LIST[type], lmerUsed - k - 1);
 				else if(type == 2)
@@ -1148,33 +1178,21 @@ void createBlock(int indBlockField, int lmerUsed, int type, vector<vector<int>>&
 
 			//if (atoi(record[1].c_str()) == 242299882 || atoi(record[1].c_str()) == 242783653)
 				//cout << i << ":" << blockFieldStr << " id:" << blockID << " len:" << blockFieldStr.length() << " " << j << "\t" << (blockFieldStr.length() - lmerUsed + 1) << "::" << record[record.size() - 1] << endl;
-			
-			// if (is_rand==true) {
-			// 	int rand_int;
-			// 	rand_int = rand() % 100;
-			// 	if (rand_int >= rand_theshold) {
-			// 		blockArr[blockID%blockTotal].push_back(i);
-			// 		addedToBlock++;
-			// 	}
-			// }
+			if(!(blockID < 0 || blockID >= blockTotal)){
+				blockArr[blockID].push_back(i);
+				blocked_total++;
+			}
 				
-				//cout<<"BlockID: "<< blockID << " cluster i: "<< i <<endl;
-			
-			blockArr[blockID].push_back(i);
-			addedToBlock++;
-			
-			// if (blockID < blockTotal) {
-			// 	blockArr[blockID].push_back(i);
-			// 	addedToBlock++;
-			// }
 		}
 
 		blkCount	+= (blockFieldStr.length() - lmerUsed + 1);
 	}
-	cout << blockTotal << "Ideal blk count: " << blkCount << "AddtoABlock: " << addedToBlock << endl;
+	blocks = blockArr;
+	totalBlocked = blocked_total;
+	cout << blockTotal << "blk count: " << blkCount << " Blocked Total " << blocked_total << endl;
 }
 
-int c1 = 0, c2 = 0;
+
 void createClusterEdgeList(vector<vector<int>>& blockArr)
 {
 	cout << "createClusterEdgeList" << endl;
@@ -1188,17 +1206,28 @@ void createClusterEdgeList(vector<vector<int>>& blockArr)
 			generateEdgilist(blockArr[i]);
 		}
 	}
-
-	cout <<  c1 << " " << c2 << " link total " << testVal << " blk: " << blockTotal << endl;
+	totalEdges = c1;
+	cout << " Total Edges: "<< c1 << endl;
 }
 
 
+void printRecords() {
+	for (size_t i = 0; i < recordArr.size(); i++)
+	{
+		for (size_t j = 0; j < recordArr[i].size(); j++)
+		{
+			cout<< recordArr[i][j] << " ";
+		}
+		cout<< endl;
+		
+	}
+	
+}
  // generate edge list within a block
 
 void generateEdgilist(vector<int>& blockRowArr)
 {
 	int blockItemTotal	= blockRowArr.size();
-
 	vector<vector<string> > dataArr(blockItemTotal); // to make cache-efficient, keep records in a row
 	for (int i = 0; i < blockItemTotal; ++i)
 		dataArr[i]	= recordArr[clusterExactIndArr[blockRowArr[i]][0]];
@@ -1210,7 +1239,7 @@ void generateEdgilist(vector<int>& blockRowArr)
 	for (int i = 0; i < blockItemTotal; i++)
 	{
 		if (vectorArr[i] == 0)
-		{c2++;
+		{
 			vector<int> tempArr;
 			tempArr.push_back(i);
 			posTemp			= 0;
@@ -1222,7 +1251,6 @@ void generateEdgilist(vector<int>& blockRowArr)
 				{
 					if (vectorArr[j] == 0 && j != temp)
 					{	
-					c1++;
 						if (isLinkageOk(dataArr[temp], dataArr[j]))
 						{
 							tempArr.push_back(j);
@@ -1230,6 +1258,7 @@ void generateEdgilist(vector<int>& blockRowArr)
 							vector<int> edge(2);
 							edge[0]	= blockRowArr[temp], edge[1] = blockRowArr[j];
 							edgeArr.push_back(edge);
+							c1++;
 						}
 					}
 				}
@@ -2113,7 +2142,6 @@ int calculateEditDist(vector<string>& a, vector<string>& b, vector<vector<int> >
 		if (a_ind == -1 || b_ind == -1 || a[a_ind].length() == 0 || b[b_ind].length() == 0)
 			continue;
 
-		c2++;
 		s1 		= a[a_ind];
 		s2 		= b[b_ind];
 		temp 	= calculateBasicED(s1, s2, threshRem) * weightArr[ind];
@@ -2433,4 +2461,3 @@ void makeEquivalent(int rootU, int rootV, vector<int> &parentArr, vector<int> &w
 		weightArr[rootU]	= weightArr[rootU] + 1;
 	}
 }
-

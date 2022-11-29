@@ -9,10 +9,10 @@ EXEC		:= $(EXEC_DIR)/rlacl
 DEBUG		:= #-g3
 OPT			:= -O3
 WARN		:= #-Wall
-MISC		:= -std=c++11 -c -fmessage-length=0
+MISC		:= -std=c++17 -c -fmessage-length=0
 CFLAG		:= $(OPT) $(DEBUG) $(WARN) $(MISC)
 
-INC			:= -I /opt/homebrew/Cellar/boost/1.79.0_2/include #/opt/local/include/libxml2
+INC			:= -I /usr/local/boost_1_80_0/ -I /usr/include/libxml2/
 LIB			:= -lxml2
 
 RM			:= rm -rf
